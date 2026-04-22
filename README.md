@@ -9,6 +9,6 @@ Both are implemented from scratch, using lecture notes / labs for reference
 
 TEAM MEMBER CONTRIBUTIONS
 
-Milan - Queue
-Navya - Stack
-Krish - Additional features
+* Milan - Queue
+* Navya - Stack
+* Krish - Additional features
