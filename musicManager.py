@@ -42,9 +42,23 @@ class SongQueue:
         if self.isEmpty(): self.tail = None
         return res
 
+    def seeNext(self):
+        if self.isEmpty(): return "No upcoming songs."
+        return f"Up next: {self.head.data}"
+
     def clearQueue(self):
         self.head = self.tail = None
         self.size = 0
+
+    def display(self):
+        if self.isEmpty():
+            print("Upcoming queue is empty.")
+            return
+        curr = self.head
+        print("Upcoming Queue:", end=" ")
+        while curr:
+            print(curr.data, end=" -> " if curr.next else "\n")
+            curr = curr.next
 
 class HistoryStack:
     def __init__(self):
@@ -67,6 +81,24 @@ class HistoryStack:
         self.size -= 1
         return res
 
+    def seeLastPlayed(self):
+        if self.isEmpty(): return "No history yet."
+        return f"Last played: {self.top.data}"
+
+    def clearHistory(self):
+        self.top = None
+        self.size = 0
+
+    def display(self):
+        if self.isEmpty():
+            print("History is empty.")
+            return
+        curr = self.top
+        print("History (most recent first):", end=" ")
+        while curr:
+            print(curr.data, end=" -> " if curr.next else "\n")
+            curr = curr.next
+
 class BstNode:
     def __init__(self, song):
         self.song = song
@@ -88,7 +120,6 @@ class TrendingBst:
             if not curr.left: curr.left = BstNode(song)
             else: self.insertNode(curr.left, song)
         else:
-            # Songs with same playCount go to the right to keep them together
             if not curr.right: curr.right = BstNode(song)
             else: self.insertNode(curr.right, song)
 
