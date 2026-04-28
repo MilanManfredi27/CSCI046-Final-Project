@@ -35,23 +35,15 @@ class SongQueue:
         self.size += 1
 
     def getNextSong(self):
-        if self.isEmpty():
-            return None
-        result = self.head.data
+        if self.isEmpty(): return None
+        res = self.head.data
         self.head = self.head.next
         self.size -= 1
-        if self.isEmpty():
-            self.tail = None
-        return result
-
-    def seeNext(self):
-        if self.isEmpty():
-            return "No upcoming songs."
-        return f"Up next: {self.head.data}"
+        if self.isEmpty(): self.tail = None
+        return res
 
     def clearQueue(self):
-        self.head = None
-        self.tail = None
+        self.head = self.tail = None
         self.size = 0
 
 class HistoryStack:
@@ -69,55 +61,43 @@ class HistoryStack:
         self.size += 1
 
     def goBack(self):
-        if self.isEmpty():
-            return None
-        result = self.top.data
+        if self.isEmpty(): return None
+        res = self.top.data
         self.top = self.top.next
         self.size -= 1
-        return result
-
-    def seeLastPlayed(self):
-        if self.isEmpty():
-            return "No history."
-        return f"Last played: {self.top.data}"
-
-    def clearHistory(self):
-        self.top = None
-        self.size = 0
-
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def enqueue(self, song):
-        self.heap.append(song)
-        self.siftUp(len(self.heap) - 1)
-
-    def dequeue(self):
-        if not self.heap: return None
-        if len(self.heap) == 1: return self.heap.pop()
-        res = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self.siftDown(0)
         return res
 
-    def siftUp(self, i):
-        while i > 0:
-            p = (i - 1) // 2
-            if self.heap[i].playCount > self.heap[p].playCount:
-                self.heap[i], self.heap[p] = self.heap[p], self.heap[i]
-                i = p
-            else: break
+class BstNode:
+    def __init__(self, song):
+        self.song = song
+        self.left = None
+        self.right = None
 
-    def siftDown(self, i):
-        while True:
-            l, r, m = 2*i + 1, 2*i + 2, i
-            if l < len(self.heap) and self.heap[l].playCount > self.heap[m].playCount: m = l
-            if r < len(self.heap) and self.heap[r].playCount > self.heap[m].playCount: m = r
-            if m != i:
-                self.heap[i], self.heap[m] = self.heap[m], self.heap[i]
-                i = m
-            else: break
+class TrendingBst:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, song):
+        if not self.root:
+            self.root = BstNode(song)
+        else:
+            self.insertNode(self.root, song)
+
+    def insertNode(self, curr, song):
+        if song.playCount < curr.song.playCount:
+            if not curr.left: curr.left = BstNode(song)
+            else: self.insertNode(curr.left, song)
+        else:
+            # Songs with same playCount go to the right to keep them together
+            if not curr.right: curr.right = BstNode(song)
+            else: self.insertNode(curr.right, song)
+
+    def findMax(self):
+        if not self.root: return None
+        curr = self.root
+        while curr.right:
+            curr = curr.right
+        return curr.song
 
 class LinkedList:
     def __init__(self):
@@ -159,39 +139,29 @@ class MusicManager:
         return None
 
     def shufflePlay(self):
-        tempList = []
+        temp = []
         curr = self.upcoming.head
         while curr:
-            tempList.append(curr.data)
+            temp.append(curr.data)
             curr = curr.next
-        
-        n = len(tempList)
-        for i in range(n - 1, 0, -1):
-            j = random.randint(0, i)
-            tempList[i], tempList[j] = tempList[j], tempList[i]
-        
+        random.shuffle(temp)
         self.upcoming.clearQueue()
-        for s in tempList:
-            self.upcoming.addToQueue(s)
+        for s in temp: self.upcoming.addToQueue(s)
 
     def getTrendingSong(self):
-        pq = PriorityQueue()
+        bst = TrendingBst()
         for s in self.allSongs:
-            if s.playCount > 0:
-                pq.enqueue(s)
-        return pq.dequeue()
+            if s.playCount > 0: bst.insert(s)
+        return bst.findMax()
 
     def createPlaylist(self, name):
-        if name not in self.playlists:
-            self.playlists[name] = LinkedList()
+        if name not in self.playlists: self.playlists[name] = LinkedList()
 
     def addSongToPlaylist(self, name, song):
-        if name in self.playlists:
-            self.playlists[name].append(song)
+        if name in self.playlists: self.playlists[name].append(song)
 
     def deleteSongFromPlaylist(self, name, songId):
-        if name in self.playlists:
-            self.playlists[name].remove(songId)
+        if name in self.playlists: self.playlists[name].remove(songId)
 
     def loadPlaylistToQueue(self, name):
         if name in self.playlists:
